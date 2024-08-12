@@ -1,0 +1,8 @@
+runtime: nodejs22
+
+env_variables:
+  SUPPRESS_NO_CONFIG_WARNING: "y"
+
+handlers:
+  - url: /.*
+    script: auto

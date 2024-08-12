@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MQTT Dashboard</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        #messages {
+            margin-bottom: 20px;
+        }
+
+        .message {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>MQTT Dashboard</h1>
+    <div>
+        <strong>Connected Clients:</strong> <span id="connectedClients">0</span>
+    </div>
+    <h2>Messages</h2>
+    <div id="messages"></div>
+    <h2>Publish a Message</h2>
+    <form id="publishForm">
+        <label>
+            Client:
+            <select id="clientId" required></select>
+        </label>
+        <label>
+            Topic:
+            <select id="topic" required></select>
+        </label>
+        <label>
+            Message:
+            <input type="text" id="message" required>
+        </label>
+        <button type="submit">Publish</button>
+    </form>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script>
+        const socket = io();
+
+        const connectedClientsEl = document.getElementById('connectedClients');
+        const messagesEl = document.getElementById('messages');
+        const publishForm = document.getElementById('publishForm');
+        const topicSelect = document.getElementById('topic');
+        const clientSelect = document.getElementById('clientId');
+        const messageInput = document.getElementById('message');
+
+        socket.on('statusUpdate', (data) => {
+            connectedClientsEl.textContent = data.connectedClients;
+        });
+
+        socket.on('newMessage', (message) => {
+            const messageEl = document.createElement('div');
+            messageEl.className = 'message';
+            messageEl.textContent = `Topic: ${message.topic}, Message: ${message.payload}, Client: ${message.clientId}`;
+            messagesEl.appendChild(messageEl);
+        });
+
+        socket.on('allMessages', (allMessages) => {
+            messagesEl.innerHTML = '';
+            allMessages.forEach((message) => {
+                const messageEl = document.createElement('div');
+                messageEl.className = 'message';
+                messageEl.textContent = `Topic: ${message.topic}, Message: ${message.payload}, Client: ${message.clientId}`;
+                messagesEl.appendChild(messageEl);
+            });
+        });
+
+        socket.on('clientListUpdate', (clients) => {
+            clientSelect.innerHTML = '';
+            clients.forEach(clientId => {
+                const option = document.createElement('option');
+                option.value = clientId;
+                option.textContent = clientId;
+                clientSelect.appendChild(option);
+            });
+        });
+
+        socket.on('topicListUpdate', (topics) => {
+            topicSelect.innerHTML = '';
+            topics.forEach(topic => {
+                const option = document.createElement('option');
+                option.value = topic;
+                option.textContent = topic;
+                topicSelect.appendChild(option);
+            });
+        });
+
+        clientSelect.addEventListener('change', () => {
+            const clientId = clientSelect.value;
+            socket.emit('getTopics', clientId);
+        });
+
+        publishForm.addEventListener('submit', (event) => {
+            event.preventDefault();
+            const topic = topicSelect.value;
+            const message = messageInput.value;
+            const clientId = clientSelect.value;
+            socket.emit('publish', { topic, message, clientId });
+        });
+
+        socket.on('messagePublished', (data) => {
+            console.log(`Message published to topic ${data.topic}: ${data.message}`);
+        });
+
+        socket.on('error', (data) => {
+            console.error(`Error: ${data.message}`, data.error);
+        });
+    </script>
+</body>
+
+</html>
