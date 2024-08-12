@@ -1,8 +1,10 @@
 const mqtt = require('mqtt');
-const client = mqtt.connect('mqtt://mqqt-server-9360b01b0f99.herokuapp.com:1885');
+
+// Use WebSocket URL
+const client = mqtt.connect('wss://mqqt-server-9360b01b0f99.herokuapp.com');
 
 client.on('connect', () => {
-  console.log('Connected to MQTT broker');
+  console.log('Connected to MQTT broker via WebSocket');
   
   // Subscribe to a topic
   client.subscribe('sensors/temperature', (err) => {
@@ -11,11 +13,10 @@ client.on('connect', () => {
     }
   });
 
-  // Publish a message to a topic
-  client.publish('sensors/temperature', '22.5');
+  // Publish a message
+  client.publish('sensors/temperature', '23.5');
 });
 
 client.on('message', (topic, message) => {
-  // Handle received messages
   console.log(`Received message: ${message.toString()} on topic: ${topic}`);
 });
