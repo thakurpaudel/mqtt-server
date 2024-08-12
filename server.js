@@ -13,7 +13,7 @@ const fs = require('fs'); // File system module for local storage
 
 // Initialize GCS
 const storage = new Storage();
-const bucketName = 'mqqt_bucket'; // Replace with your bucket name
+const bucketName = process.env.GCS_BUCKET_NAME || 'your-bucket-name'; // Replace with your bucket name
 
 // Determine storage method
 const useGCS = process.env.USE_GCS === 'true';
@@ -30,11 +30,11 @@ const USERS = {
   'user2': 'password2'
 };
 
-// MQTT Server Setup
+// MQTT Server Setup (using WebSockets)
+const PORT = process.env.PORT || 8080; // Use Heroku-assigned port or 8080 for local testing
 const mqttSettings = {
-  port: 1885,
   http: {
-    port: 3000,
+    port: PORT,
     bundle: true,
     static: './'
   }
@@ -47,7 +47,7 @@ let connectedClients = {};
 let clientTopics = {};
 
 mqttServer.on('ready', () => {
-  console.log('MQTT server is up and running on port 1885');
+  console.log(`MQTT server is up and running on port ${PORT}`);
   // Start continuous logging every second
   // setInterval(() => {
   //   console.log('Server is running:', new Date().toISOString());
@@ -198,8 +198,6 @@ const io = socketIo(server, {
     origin: '*',
   }
 });
-
-const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
 app.use(express.static(__dirname));
