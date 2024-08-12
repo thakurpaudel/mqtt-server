@@ -49,9 +49,9 @@ let clientTopics = {};
 mqttServer.on('ready', () => {
   console.log('MQTT server is up and running on port 1885');
   // Start continuous logging every second
-  setInterval(() => {
-    console.log('Server is running:', new Date().toISOString());
-  }, 1000);
+  // setInterval(() => {
+  //   console.log('Server is running:', new Date().toISOString());
+  // }, 1000);
 });
 
 const authenticate = (client, username, password, callback) => {
